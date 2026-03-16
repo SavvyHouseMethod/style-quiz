@@ -704,6 +704,16 @@ function revealResult(){
     return;
   }
   
+  // Calculate totals FIRST (before we need it for tagging)
+  const totals = {};
+  Object.keys(styles).forEach(k => totals[k]=0);
+  
+  answers.forEach(a => {
+    if(a && a.scores){
+      Object.keys(a.scores).forEach(k => totals[k]+=a.scores[k]);
+    }
+  });
+  
   // Get primary style for tagging
   const styleKeys = Object.keys(totals);
   const primaryKey = styleKeys.reduce((a,b)=>totals[a]>totals[b]?a:b);
