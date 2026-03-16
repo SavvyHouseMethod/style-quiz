@@ -718,21 +718,23 @@ function revealResult(){
   const styleKeys = Object.keys(totals);
   const primaryKey = styleKeys.reduce((a,b)=>totals[a]>totals[b]?a:b);
   
-  // Send to Kit
+  // Send to Kit with proper format
+  const formData = new FormData();
+  formData.append('email_address', email);
+  formData.append('first_name', name);
+  formData.append('tags', 'style-' + primaryKey);
+  
   fetch('https://api.kit.com/v3/forms/9141246/subscribe', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'X-Kit-Api-Key': 'mW2AaWyUN-0Wsa97onDvfw'
     },
-    body: JSON.stringify({
-      api_key: 'mW2AaWyUN-0Wsa97onDvfw',
-      email: email,
-      first_name: name,
-      tags: ['quiz-completed', 'style-' + primaryKey]
-    })
+    body: formData
   })
-  .then(() => {
-    // Show results regardless of API success/fail
+  .then(response => response.json())
+  .then(data => {
+    console.log('Kit success:', data);
+    // Show results
     buildResult();
     showScreen('result');
   })
