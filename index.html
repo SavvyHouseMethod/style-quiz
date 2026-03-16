@@ -706,17 +706,43 @@ function calcScores(){
 // ═══════════════════════════════════════
 function revealResult(){
   const email = document.getElementById('emailInput').value;
-  if(!email||!email.includes('@')){
+  const name = document.getElementById('nameInput').value;
+  
+  // Validate email
+  if(!email || !email.includes('@')){
     document.getElementById('emailInput').style.borderColor='#E8522A';
-    document.getElementById('emailInput').placeholder='Please enter a valid email 😊';
     return;
   }
-  // → Connect to Mailchimp/ConvertKit here
-  buildResult();
-  showScreen('result');
+  
+  // Get primary style for tagging
+  const styleKeys = Object.keys(totals);
+  const primaryKey = styleKeys.reduce((a,b)=>totals[a]>totals[b]?a:b);
+  
+  // Send to Kit
+  fetch('https://api.kit.com/v3/forms/9141246/subscribe', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      api_key: 'mW2AaWyUN-0Wsa97onDvfw',
+      email: email,
+      first_name: name,
+      tags: ['quiz-completed', 'style-' + primaryKey]
+    })
+  })
+  .then(() => {
+    // Show results regardless of API success/fail
+    buildResult();
+    showScreen('result');
+  })
+  .catch(err => {
+    console.log('Kit error:', err);
+    // Still show results even if Kit fails
+    buildResult();
+    showScreen('result');
+  });
 }
-function skipEmail(){ buildResult(); showScreen('result'); }
-
 // ═══════════════════════════════════════
 // BUILD RESULT
 // ═══════════════════════════════════════
