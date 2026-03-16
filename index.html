@@ -704,7 +704,7 @@ function revealResult(){
     return;
   }
   
-  // Calculate totals FIRST (before we need it for tagging)
+  // Calculate totals
   const totals = {};
   Object.keys(styles).forEach(k => totals[k]=0);
   
@@ -714,33 +714,32 @@ function revealResult(){
     }
   });
   
-  // Get primary style for tagging
+  // Get primary style
   const styleKeys = Object.keys(totals);
   const primaryKey = styleKeys.reduce((a,b)=>totals[a]>totals[b]?a:b);
   
-  // Send to Kit with proper format
-  const formData = new FormData();
+  // Use Kit's public form endpoint (no API key needed)
+  const formData = new URLSearchParams();
   formData.append('email_address', email);
   formData.append('first_name', name);
-  formData.append('tags', 'style-' + primaryKey);
+  formData.append('tags[]', 'style-' + primaryKey);
   
-  fetch('https://api.kit.com/v3/forms/9141246/subscribe', {
+  fetch('https://app.kit.com/forms/9141246/subscriptions', {
     method: 'POST',
     headers: {
-      'X-Kit-Api-Key': 'mW2AaWyUN-0Wsa97onDvfw'
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: formData
+    body: formData.toString()
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log('Kit success:', data);
-    // Show results
+  .then(response => {
+    console.log('Kit response:', response);
+    // Show results regardless
     buildResult();
     showScreen('result');
   })
   .catch(err => {
     console.log('Kit error:', err);
-    // Still show results even if Kit fails
+    // Still show results
     buildResult();
     showScreen('result');
   });
