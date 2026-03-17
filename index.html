@@ -320,6 +320,7 @@
 </div><!-- end quiz-wrap -->
 
 <script>
+let currentPrimaryStyle = ''; // Add this line at the top
 // ═══════════════════════════════════════
 // STYLE DEFINITIONS — 10 styles
 // ═══════════════════════════════════════
@@ -704,35 +705,20 @@ function revealResult(){
     return;
   }
   
-  // Calculate totals
-  const totals = {};
-  Object.keys(styles).forEach(k => totals[k]=0);
+  // First build the result to calculate the correct style
+  buildResult();
   
-  answers.forEach(a => {
-    if(a && a.scores){
-      Object.keys(a.scores).forEach(k => totals[k]+=a.scores[k]);
-    }
-  });
+  // Use the style that buildResult calculated
+  const primaryKey = currentPrimaryStyle;
   
-  // Get primary style
-  const styleKeys = Object.keys(totals);
-  const primaryKey = styleKeys.reduce((a,b)=>totals[a]>totals[b]?a:b);
+  console.log('Subscribing with style:', primaryKey);
   
-  console.log('=== DEBUG INFO ===');
-  console.log('Primary style:', primaryKey);
-  console.log('Email:', email);
-  console.log('Name:', name);
-  
-  // Try multiple custom field formats
+  // Send to Kit
   const formData = new URLSearchParams();
   formData.append('email_address', email);
   if(name) formData.append('first_name', name);
-  
-  // Try all possible custom field formats
   formData.append('fields[style]', primaryKey);
-  formData.append('style', primaryKey); // Alternative format
-  
-  console.log('Data being sent:', formData.toString());
+  formData.append('style', primaryKey);
   
   fetch('https://app.kit.com/forms/9141246/subscriptions', {
     method: 'POST',
@@ -743,17 +729,16 @@ function revealResult(){
   })
   .then(response => {
     console.log('Kit response status:', response.status);
-    console.log('Kit response OK:', response.ok);
     return response.text();
   })
   .then(text => {
-    console.log('Kit response body:', text);
-    buildResult();
+    console.log('Kit success - subscribed with style:', primaryKey);
+    // Show the result screen
     showScreen('result');
   })
   .catch(err => {
     console.log('Kit error:', err);
-    buildResult();
+    // Still show results even if Kit fails
     showScreen('result');
   });
 }
@@ -763,6 +748,7 @@ function revealResult(){
 function buildResult(){
   const sorted = calcScores();
   const [primaryKey, primaryPct] = sorted[0];
+  currentPrimaryStyle = primaryKey;
   const [secondaryKey, secondaryPct] = sorted[1];
 
   // Recalculate so primary+secondary feel meaningful
