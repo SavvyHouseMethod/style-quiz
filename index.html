@@ -718,11 +718,21 @@ function revealResult(){
   const styleKeys = Object.keys(totals);
   const primaryKey = styleKeys.reduce((a,b)=>totals[a]>totals[b]?a:b);
   
-  // Use Kit's public form endpoint (no API key needed)
+  console.log('=== DEBUG INFO ===');
+  console.log('Primary style:', primaryKey);
+  console.log('Email:', email);
+  console.log('Name:', name);
+  
+  // Try multiple custom field formats
   const formData = new URLSearchParams();
   formData.append('email_address', email);
-  formData.append('first_name', name);
-  formData.append('tags[]', 'style-' + primaryKey);
+  if(name) formData.append('first_name', name);
+  
+  // Try all possible custom field formats
+  formData.append('fields[style]', primaryKey);
+  formData.append('style', primaryKey); // Alternative format
+  
+  console.log('Data being sent:', formData.toString());
   
   fetch('https://app.kit.com/forms/9141246/subscriptions', {
     method: 'POST',
@@ -732,14 +742,17 @@ function revealResult(){
     body: formData.toString()
   })
   .then(response => {
-    console.log('Kit response:', response);
-    // Show results regardless
+    console.log('Kit response status:', response.status);
+    console.log('Kit response OK:', response.ok);
+    return response.text();
+  })
+  .then(text => {
+    console.log('Kit response body:', text);
     buildResult();
     showScreen('result');
   })
   .catch(err => {
     console.log('Kit error:', err);
-    // Still show results
     buildResult();
     showScreen('result');
   });
