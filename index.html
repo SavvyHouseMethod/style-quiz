@@ -742,11 +742,21 @@ function revealResult(){
     showScreen('result');
   });
 }
+
+function skipEmail(){
+  buildResult();
+  showScreen('result');
+}
 // ═══════════════════════════════════════
 // BUILD RESULT
 // ═══════════════════════════════════════
 function buildResult(){
   const sorted = calcScores();
+  console.log('=== BUILRESULT DEBUG ===');
+  console.log('Sorted scores:', sorted);
+  console.log('Primary (sorted[0]):', sorted[0]);
+  console.log('Secondary (sorted[1]):', sorted[1]);
+  
   const [primaryKey, primaryPct] = sorted[0];
   currentPrimaryStyle = primaryKey;
   const [secondaryKey, secondaryPct] = sorted[1];
